@@ -1,0 +1,6 @@
+BasedOnStyle: Google
+IndentWidth: 4
+AllowShortFunctionsOnASingleLine: Empty
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterFunction: true

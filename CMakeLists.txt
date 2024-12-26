@@ -1,13 +1,41 @@
-cmake_minimum_required(VERSION 3.10)
-project(Chip-8)
+cmake_minimum_required(VERSION 3.24...3.30)
+project(chip8)
 
-set(CMAKE_CXX_STANDARD 24)
+include(FetchContent)
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-include_directories(include)
+# Dependencies
+set(RAYLIB_VERSION 5.0)
 
-set(SOURCES
-    src/main.c
+FetchContent_Declare(
+    raylib
+    DOWNLOAD_EXTRACT_TIMESTAMP OFF
+    URL https://github.com/raysan5/raylib/archive/refs/tags/${RAYLIB_VERSION}.tar.gz
+    FIND_PACKAGE_ARGS
 )
 
-add_executable(c8 ${SOURCES})
+FetchContent_MakeAvailable(raylib)
+# !Dependencies
+
+add_executable(${PROJECT_NAME} ${SOURCES})
+add_subdirectory(src)
+target_link_libraries(${PROJECT_NAME} raylib)
+
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${PROJECT_NAME}
+)
+
+set_property(TARGET ${PROJECT_NAME} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY $<TARGET_FILE_DIR:${PROJECT_NAME}>)
+
+add_custom_command(
+    TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/src/resources $<TARGET_FILE_DIR:${PROJECT_NAME}>/resources
+)
+
+# Link macOS-specific frameworks.
+if (APPLE)
+    target_link_libraries(${PROJECT_NAME} "-framework IOKit")
+    target_link_libraries(${PROJECT_NAME} "-framework Cocoa")
+    target_link_libraries(${PROJECT_NAME} "-framework OpenGL")
+endif()

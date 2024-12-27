@@ -1,5 +1,9 @@
 # Builds
+.cache/
 build/
+
+# ROMs
+*.ch8
 
 # Misc.
 .DS_Store

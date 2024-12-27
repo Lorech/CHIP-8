@@ -1,16 +1,16 @@
+#include "display.h"
 #include "raylib.h"
 
-int main() {
-    const int screenWidth = 800;
-    const int screenHeight = 600;
-
-    InitWindow(screenWidth, screenHeight, "Hello, World!");
-    SetTargetFPS(60);
+int main()
+{
+    InitWindow(SCREEN_WIDTH * SCALING_FACTOR, SCREEN_HEIGHT * SCALING_FACTOR,
+               "CHIP-8");
+    SetTargetFPS(TARGET_FRAMERATE);
 
     while (!WindowShouldClose()) {
         BeginDrawing();
-            ClearBackground(RAYWHITE);
-            DrawText("Hello, World!", 10, 10, 20, DARKGRAY);
+        ClearBackground(RAYWHITE);
+        DrawText("Hello, World!", 10, 10, 20, DARKGRAY);
         EndDrawing();
     }
 

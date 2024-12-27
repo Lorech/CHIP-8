@@ -1,17 +1,30 @@
+#include <stdint.h>
+#include <stdio.h>
+
+#include "cpu.h"
 #include "display.h"
 #include "raylib.h"
 
-int main()
+int main(int argc, char **argv)
 {
-    InitWindow(SCREEN_WIDTH * SCALING_FACTOR, SCREEN_HEIGHT * SCALING_FACTOR,
-               "CHIP-8");
+    if (argc < 2) {
+        printf("No ROM path provided!");
+        return 1;
+    }
+
+    InitWindow(
+        SCREEN_WIDTH * SCALING_FACTOR,
+        SCREEN_HEIGHT * SCALING_FACTOR,
+        "CHIP-8");
     SetTargetFPS(TARGET_FRAMERATE);
 
+    startup(argv[1]);
+    const int instructionsPerFrame = INSTRUCTIONS_PER_SECOND / TARGET_FRAMERATE;
+
     while (!WindowShouldClose()) {
-        BeginDrawing();
-        ClearBackground(RAYWHITE);
-        DrawText("Hello, World!", 10, 10, 20, DARKGRAY);
-        EndDrawing();
+        for (uint8_t i = 0; i < instructionsPerFrame; i++) {
+            run_cycle();
+        }
     }
 
     CloseWindow();

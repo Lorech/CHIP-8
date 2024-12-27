@@ -1,6 +1,7 @@
 #ifndef MEMORY_H_
 #define MEMORY_H_
 
+#include <stdbool.h>
 #include <stdint.h>
 
 /**
@@ -14,6 +15,13 @@
 void init_memory();
 
 /**
+ * Loads the provided program into memory.
+ *
+ * @param program An array describing the program.
+ */
+void load_program(uint8_t *program);
+
+/**
  * Reads a value from memory at the specified address.
  *
  * The function assumes that the provided address fits within the 12-bit memory
@@ -23,6 +31,17 @@ void init_memory();
  * @return The 8-bit value stored at the specified address.
  */
 uint8_t read_memory(uint16_t address);
+
+/**
+ * Gets a pointer to memory at the current address.
+ *
+ * Allows for passing around several bytes of data stored in memory to other
+ * modules without having to manually index across results.
+ *
+ * @param address The 12-bit memory address to read from.
+ * @return A pointer to the requested memory address.
+ */
+uint8_t *get_memory_pointer(uint16_t address);
 
 /**
  * Writes a value to memory at the specified address.

@@ -3,7 +3,17 @@
 
 #include <stdint.h>
 
-#define IPS 700  // The amount of instructions to perform per second.
+#define INSTRUCTIONS_PER_SECOND 700  // The amount of instructions to perform per second.
+
+/**
+ * Performs the startup sequence of the emulator.
+ *
+ * Initializes the system into a stable state and loads a ROM from the provided
+ * file path.
+ *
+ * @param path The path to a ROM file which should be read into memory.
+ */
+void startup(char* path);
 
 /**
  * Runs a single CPU cycle.

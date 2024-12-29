@@ -4,11 +4,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#define MEMORY_SIZE (4 * 1024)   // 4KB
-#define FONT_SIZE (16 * 5)       // 16 characters of 5 bytes
-#define FONT_START_ADDRESS 0x50  // General convention around CHIP-8
-#define PROGRAM_START 0x200      // General convention around CHIP-8
-
 const uint8_t FONT[FONT_SIZE] = {
     0xF0, 0x90, 0x90, 0x90, 0xF0,  // 0
     0x20, 0x60, 0x20, 0x20, 0x70,  // 1
@@ -39,7 +34,7 @@ void init_memory()
 
     // Load the font into the memory.
     for (uint16_t i = 0; i < sizeof(FONT); i++) {
-        memory[FONT_START_ADDRESS + i] = FONT[i];
+        memory[FONT_START + i] = FONT[i];
     }
 }
 

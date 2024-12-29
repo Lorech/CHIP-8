@@ -4,6 +4,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#define FONT_START 0x50         // General convention around CHIP-8
+#define PROGRAM_START 0x200     // General convention around CHIP-8
+#define MEMORY_SIZE (4 * 1024)  // 4KB
+#define FONT_SIZE (16 * 5)      // 16 characters of 5 bytes
+
 /**
  * Initializes the memory array to zero.
  *

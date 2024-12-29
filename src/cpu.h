@@ -3,7 +3,11 @@
 
 #include <stdint.h>
 
-#define INSTRUCTIONS_PER_SECOND 700  // The amount of instructions to perform per second.
+#ifdef UNIT_TEST
+#include "stack.h"
+#endif  // !UNIT_TEST
+
+#define INSTRUCTIONS_PER_SECOND 700
 
 /**
  * Performs the startup sequence of the emulator.
@@ -13,7 +17,7 @@
  *
  * @param path The path to a ROM file which should be read into memory.
  */
-void startup(char* path);
+void startup(char *path);
 
 /**
  * Runs a single CPU cycle.
@@ -42,5 +46,53 @@ static uint16_t read_instruction();
  * @param instruction The instruction to execute.
  */
 static void run_instruction(uint16_t instruction);
+
+#ifdef UNIT_TEST
+/**
+ * Retrieves the program counter for testing purposes.
+ *
+ * @return The program counter.
+ */
+uint16_t get_program_counter();
+
+/**
+ * Retrieves the index register for testing purposes.
+ *
+ * @return The index register.
+ */
+uint16_t get_index_register();
+
+/**
+ * Retrieves the variable registers for testing purposes.
+ *
+ * @return The variable registers.
+ */
+uint8_t *get_variable_registers();
+
+/**
+ * Retrieves the stack for testing purposes.
+ *
+ * @return The stack.
+ */
+stack *get_stack();
+
+/**
+ * Reads and returns the next CPU instruction.
+ *
+ * Publicly exposes the read_instruction function for testing purposes.
+ *
+ * @return The 4 bytes that describe the next instruction.
+ */
+uint16_t debug_read_instruction();
+
+/**
+ * Runs the provided CPU instruction.
+ *
+ * Publicly exposes the run_instruction function for testing purposes.
+ *
+ * @param instruction The instruction to execute.
+ */
+void debug_run_instruction(uint16_t instruction);
+#endif  // !UNIT_TEST
 
 #endif  // !CPU_H_

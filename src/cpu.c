@@ -88,3 +88,35 @@ static uint16_t read_instruction()
     PC += 2;
     return instruction;
 }
+
+#ifdef UNIT_TEST
+uint16_t get_program_counter()
+{
+    return PC;
+}
+
+uint16_t get_index_register()
+{
+    return I;
+}
+
+uint8_t *get_variable_registers()
+{
+    return V;
+}
+
+stack *get_stack()
+{
+    return &s;
+}
+
+uint16_t debug_read_instruction()
+{
+    return read_instruction();
+}
+
+void debug_run_instruction(uint16_t instruction)
+{
+    run_instruction(instruction);
+}
+#endif  // !UNIT_TEST

@@ -26,6 +26,7 @@ FetchContent_MakeAvailable(unity)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 add_subdirectory(src)
+target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_link_libraries(${PROJECT_NAME} raylib)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES

@@ -40,4 +40,13 @@ bool draw_sprite(uint8_t x, uint8_t y, uint8_t h, uint8_t *sprite);
  */
 static void draw();
 
+#ifdef UNIT_TEST
+/**
+ * Retrieves the display array for testing purposes.
+ *
+ * @return The display array.
+ */
+bool (*get_display())[SCREEN_WIDTH];
+#endif  // !UNIT_TEST
+
 #endif  // !DISPLAY_H_

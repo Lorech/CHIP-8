@@ -48,6 +48,7 @@ bool draw_sprite(uint8_t x, uint8_t y, uint8_t h, uint8_t *sprite_data)
 
 static void draw()
 {
+#ifndef UNIT_TEST
     BeginDrawing();
     ClearBackground(BLACK);
     for (uint8_t y = 0; y < SCREEN_HEIGHT; y++) {
@@ -63,4 +64,12 @@ static void draw()
         }
     }
     EndDrawing();
+#endif  // !UNIT_TEST
 }
+
+#ifdef UNIT_TEST
+bool (*get_display())[SCREEN_WIDTH]
+{
+    return display;
+}
+#endif  // !UNIT_TEST

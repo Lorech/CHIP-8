@@ -14,8 +14,14 @@ FetchContent_Declare(
     URL https://github.com/raysan5/raylib/archive/refs/tags/${RAYLIB_VERSION}.tar.gz
     FIND_PACKAGE_ARGS
 )
-
 FetchContent_MakeAvailable(raylib)
+
+FetchContent_Declare(
+    unity
+    GIT_REPOSITORY https://github.com/ThrowTheSwitch/Unity.git
+    GIT_TAG master
+)
+FetchContent_MakeAvailable(unity)
 # !Dependencies
 
 add_executable(${PROJECT_NAME} ${SOURCES})
@@ -39,3 +45,7 @@ if (APPLE)
     target_link_libraries(${PROJECT_NAME} "-framework Cocoa")
     target_link_libraries(${PROJECT_NAME} "-framework OpenGL")
 endif()
+
+# Unit testing with Unity.
+enable_testing()
+add_subdirectory(tests)

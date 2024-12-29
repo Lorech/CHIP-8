@@ -36,8 +36,10 @@ void test_load_program_loads_program()
     }
 }
 
-void run_memory_tests()
+int main()
 {
+    UNITY_BEGIN();
     RUN_TEST(test_init_memory_loads_only_font);
     RUN_TEST(test_load_program_loads_program);
+    return UNITY_END();
 }

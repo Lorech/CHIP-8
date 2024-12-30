@@ -24,7 +24,7 @@ foreach(TEST_FILE ${TEST_FILES})
     add_executable(${TEST_NAME} ${TEST_FILE} ${SRC_FILE} ${DEPENDENCIES})
     add_test(NAME ${PROJECT_NAME}_${TEST_NAME} COMMAND ${TEST_NAME})
     target_include_directories(${TEST_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/include)
-    target_link_libraries(${TEST_NAME} PRIVATE raylib unity)
+    target_link_libraries(${TEST_NAME} PRIVATE unity)
     target_compile_definitions(${TEST_NAME} PRIVATE -DUNIT_TEST)
 
     add_custom_command(

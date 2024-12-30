@@ -2,7 +2,9 @@
 
 #include <stdint.h>
 
+#ifndef UNIT_TEST
 #include "raylib.h"
+#endif  // !UNIT_TEST
 
 static bool display[SCREEN_HEIGHT][SCREEN_WIDTH];
 

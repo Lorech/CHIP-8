@@ -34,13 +34,15 @@ void startup(char *path)
     clear_display();
 }
 
-void run_cycle()
+struct cpu_status run_cycle()
 {
     uint16_t instruction = read_instruction();
-    run_instruction(instruction);
+    struct cpu_status status = {.code = SUCCESS, .instruction = instruction};
+    run_instruction(instruction, &status);
+    return status;
 }
 
-static void run_instruction(uint16_t instruction)
+static void run_instruction(uint16_t instruction, struct cpu_status *status)
 {
     // TODO: Implement the missing instructions.
     switch (instruction & N1) {
@@ -50,10 +52,8 @@ static void run_instruction(uint16_t instruction)
                     clear_display();
                     break;
                 default:
-                    printf(
-                        "WARNING: Tried running system instruction 0x%04X, "
-                        "which is not implemented.\n",
-                        instruction);
+                    status->code = INVALID_INSTRUCTION;
+                    status->instruction = instruction;
             }
             break;
         case 0x1000:  // Jump
@@ -76,9 +76,8 @@ static void run_instruction(uint16_t instruction)
                 get_memory_pointer(I));
             break;
         default:
-            printf(
-                "WARNING: Instruction 0x%04X has no implementation.\n",
-                instruction);
+            status->code = UNKNOWN_INSTRUCTION;
+            status->instruction = instruction;
     }
 }
 
@@ -115,8 +114,10 @@ uint16_t debug_read_instruction()
     return read_instruction();
 }
 
-void debug_run_instruction(uint16_t instruction)
+struct cpu_status debug_run_instruction(uint16_t instruction)
 {
-    run_instruction(instruction);
+    struct cpu_status status = {.code = SUCCESS, .instruction = instruction};
+    run_instruction(instruction, &status);
+    return status;
 }
 #endif  // !UNIT_TEST

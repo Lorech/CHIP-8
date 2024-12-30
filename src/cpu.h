@@ -1,6 +1,7 @@
 #ifndef CPU_H_
 #define CPU_H_
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #ifdef UNIT_TEST
@@ -8,6 +9,20 @@
 #endif  // !UNIT_TEST
 
 #define INSTRUCTIONS_PER_SECOND 700
+
+enum cpu_status_code {
+    SUCCESS,
+    UNKNOWN_INSTRUCTION,
+    INVALID_INSTRUCTION,
+    INVALID_MEMORY_ACCESS,
+    INVALID_STACK_OPERATION,
+    INVALID_VARIABLE_REGISTER,
+};
+
+struct cpu_status {
+    enum cpu_status_code code;  // The status code of the CPU cycle.
+    uint16_t instruction;       // The instruction that was executed this cycle.
+};
 
 /**
  * Performs the startup sequence of the emulator.
@@ -24,8 +39,10 @@ void startup(char *path);
  *
  * Provides a shared abstraction for both reading and executing an instruction
  * from the system's memory.
+ *
+ * @return Meta information about the CPU cycle.
  */
-void run_cycle();
+struct cpu_status run_cycle();
 
 /**
  * Reads and returns the next CPU instruction.
@@ -44,8 +61,9 @@ static uint16_t read_instruction();
  * steps to other modules of the system where appropriate.
  *
  * @param instruction The instruction to execute.
+ * @param error Meta information about the CPU cycle.
  */
-static void run_instruction(uint16_t instruction);
+static void run_instruction(uint16_t instruction, struct cpu_status *error);
 
 #ifdef UNIT_TEST
 /**
@@ -91,8 +109,9 @@ uint16_t debug_read_instruction();
  * Publicly exposes the run_instruction function for testing purposes.
  *
  * @param instruction The instruction to execute.
+ * @return Meta information about the CPU cycle.
  */
-void debug_run_instruction(uint16_t instruction);
+struct cpu_status debug_run_instruction(uint16_t instruction);
 #endif  // !UNIT_TEST
 
 #endif  // !CPU_H_

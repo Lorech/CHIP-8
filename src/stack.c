@@ -32,3 +32,14 @@ bool pop(stack *s, uint16_t *address)
     *address = s->addresses[s->pointer--];
     return true;
 }
+
+bool peek(stack *s, uint16_t *address)
+{
+    if (s->pointer == -1) {
+        printf("Stack underflow!");
+        return false;
+    }
+
+    *address = s->addresses[s->pointer];
+    return true;
+}

@@ -44,4 +44,16 @@ bool push(stack *s, uint16_t address);
  */
 bool pop(stack *s, uint16_t *address);
 
+/**
+ * Peeks at the top of the stack, setting the address to it's value without
+ * mutating the stack itself.
+ *
+ * For CHIP-8, the stack only stores addresses to return to from subroutines.
+ *
+ * @param s The stack to peek from.
+ * @param address The address at the top of the stack.
+ * @return If the operation was successful or not.
+ */
+bool peek(stack *s, uint16_t *address);
+
 #endif  // !STACK_H_

@@ -23,7 +23,14 @@ int main(int argc, char **argv)
 
     while (!WindowShouldClose()) {
         for (uint8_t i = 0; i < instructionsPerFrame; i++) {
-            run_cycle();
+            struct cpu_status status = run_cycle();
+            if (status.code) {
+                printf(
+                    "WARNING: CPU error %d while executing instruction %04X.\n",
+                    status.code,
+                    status.instruction);
+                break;
+            }
         }
     }
 

@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "display.h"
 #include "memory.h"
@@ -22,25 +23,36 @@ static stack s;              // The stack memory
 
 void startup(char *path)
 {
+    // Read the program from a file into memory.
     FILE *f;
     f = fopen(path, "rb");
     uint8_t program[0xFFF - 0x200];
     fread(program, 1, 0xFFF - 0x200, f);
     fclose(f);
 
+    // Reset the CPU state.
+    PC = 0x200;
+    I = 0x000;
+    for (uint8_t i = 0; i < 16; i++) {
+        V[i] = 0x00;
+    }
+
+    // Initialize the sub-modules of the system.
     init_stack(&s);
     init_memory();
     load_program(program);
     clear_display();
 }
 
-void run_cycle()
+struct cpu_status run_cycle()
 {
     uint16_t instruction = read_instruction();
-    run_instruction(instruction);
+    struct cpu_status status = {.code = SUCCESS, .instruction = instruction};
+    run_instruction(instruction, &status);
+    return status;
 }
 
-static void run_instruction(uint16_t instruction)
+static void run_instruction(uint16_t instruction, struct cpu_status *status)
 {
     // TODO: Implement the missing instructions.
     switch (instruction & N1) {
@@ -50,10 +62,8 @@ static void run_instruction(uint16_t instruction)
                     clear_display();
                     break;
                 default:
-                    printf(
-                        "WARNING: Tried running system instruction 0x%04X, "
-                        "which is not implemented.\n",
-                        instruction);
+                    status->code = INVALID_INSTRUCTION;
+                    status->instruction = instruction;
             }
             break;
         case 0x1000:  // Jump
@@ -76,9 +86,8 @@ static void run_instruction(uint16_t instruction)
                 get_memory_pointer(I));
             break;
         default:
-            printf(
-                "WARNING: Instruction 0x%04X has no implementation.\n",
-                instruction);
+            status->code = UNKNOWN_INSTRUCTION;
+            status->instruction = instruction;
     }
 }
 
@@ -88,3 +97,37 @@ static uint16_t read_instruction()
     PC += 2;
     return instruction;
 }
+
+#ifdef UNIT_TEST
+uint16_t get_program_counter()
+{
+    return PC;
+}
+
+uint16_t get_index_register()
+{
+    return I;
+}
+
+uint8_t *get_variable_registers()
+{
+    return V;
+}
+
+stack *get_stack()
+{
+    return &s;
+}
+
+uint16_t debug_read_instruction()
+{
+    return read_instruction();
+}
+
+struct cpu_status debug_run_instruction(uint16_t instruction)
+{
+    struct cpu_status status = {.code = SUCCESS, .instruction = instruction};
+    run_instruction(instruction, &status);
+    return status;
+}
+#endif  // !UNIT_TEST

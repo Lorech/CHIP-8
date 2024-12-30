@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "display.h"
 #include "memory.h"
@@ -22,12 +23,21 @@ static stack s;              // The stack memory
 
 void startup(char *path)
 {
+    // Read the program from a file into memory.
     FILE *f;
     f = fopen(path, "rb");
     uint8_t program[0xFFF - 0x200];
     fread(program, 1, 0xFFF - 0x200, f);
     fclose(f);
 
+    // Reset the CPU state.
+    PC = 0x200;
+    I = 0x000;
+    for (uint8_t i = 0; i < 16; i++) {
+        V[i] = 0x00;
+    }
+
+    // Initialize the sub-modules of the system.
     init_stack(&s);
     init_memory();
     load_program(program);

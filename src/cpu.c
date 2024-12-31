@@ -64,7 +64,7 @@ static void run_instruction(uint16_t instruction, struct cpu_status *status)
                 case 0x00EE:  // Return from subroutine
                     pop(&s, &PC);
                     break;
-                default:
+                default:  // Call machine code routine
                     status->code = INVALID_INSTRUCTION;
                     status->instruction = instruction;
             }

@@ -101,6 +101,50 @@ static void run_instruction(uint16_t instruction, struct cpu_status *status)
         case 0x7000:  // Add to variable register
             V[(instruction & N2) >> 8] += instruction & B2;
             break;
+        case 0x8000:  // Logic and arithmetic
+        {
+            uint8_t *VX = &V[(instruction & N2) >> 8];
+            uint8_t *VY = &V[(instruction & N3) >> 4];
+            switch (instruction & N4) {
+                case 0x000:  // Set
+                    V[(instruction & N2) >> 8] = V[(instruction & N3) >> 4];
+                    break;
+                case 0x004:  // Add
+                    *VX = *VX + *VY;
+                    V[0xF] = *VX <= *VY;
+                    break;
+                case 0x005:  // Subtract Y from X
+                    V[0xF] = *VY > *VX;
+                    *VX = *VY - *VX;
+                    break;
+                case 0x007:  // Subtract X from Y
+                    V[0xF] = *VX > *VY;
+                    *VX = *VX - *VY;
+                    break;
+                case 0x00E:  // Shift left
+                    V[0xF] = (*VX & 0x80) >> 7;
+                    *VX = *VX << 1;
+                    // TODO: Add configurable option to move VY into VX.
+                    break;
+                case 0x006:  // Shift right
+                    V[0xF] = *VX & 0x01;
+                    *VX = *VX >> 1;
+                    // TODO: Add configurable option to move VY into VX.
+                    break;
+                case 0x002:  // AND
+                    *VX = *VX & *VY;
+                    break;
+                case 0x001:  // OR
+                    *VX = *VX | *VY;
+                    break;
+                case 0x003:  // XOR
+                    *VX = *VX ^ *VY;
+                    break;
+                default:
+                    status->code = INVALID_INSTRUCTION;
+                    status->instruction = instruction;
+            }
+        }
         case 0xA000:  // Set index register
             I = instruction & MA;
             break;

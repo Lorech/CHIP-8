@@ -79,6 +79,188 @@ void test_add_updates_variable_registers()
     TEST_ASSERT_EQUAL_INT8(0x03, get_variable_registers()[3]);
 }
 
+// 0x8XY0
+void test_set_vx_to_vy()
+{
+    struct cpu_status status;
+
+    debug_run_instruction(0x6101);
+
+    status = debug_run_instruction(0x8010);
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_UINT8(0x01, get_variable_registers()[0x0]);
+}
+
+// 0x8XY4
+void test_add_vy_to_vx()
+{
+    struct cpu_status status;
+
+    debug_run_instruction(0x6001);
+    debug_run_instruction(0x6102);
+
+    status = debug_run_instruction(0x8014);
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_UINT8(0x03, get_variable_registers()[0x0]);
+    TEST_ASSERT_FALSE(get_variable_registers()[0xF]);
+}
+
+void test_add_vy_to_vx_with_carry()
+{
+    struct cpu_status status;
+
+    debug_run_instruction(0x60FF);
+    debug_run_instruction(0x6102);
+
+    status = debug_run_instruction(0x8014);
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_UINT8(0x01, get_variable_registers()[0x0]);
+    TEST_ASSERT_TRUE(get_variable_registers()[0xF]);
+}
+
+// 0x8XY5
+void test_subtract_vy_from_vx()
+{
+    struct cpu_status status;
+
+    debug_run_instruction(0x6002);
+    debug_run_instruction(0x6101);
+
+    status = debug_run_instruction(0x8015);
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_UINT8(0xFF, get_variable_registers()[0x0]);
+    TEST_ASSERT_FALSE(get_variable_registers()[0xF]);
+}
+
+void test_subtract_vy_from_vx_with_carry()
+{
+    struct cpu_status status;
+
+    debug_run_instruction(0x6001);
+    debug_run_instruction(0x6102);
+
+    status = debug_run_instruction(0x8015);
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_UINT8(0x01, get_variable_registers()[0x0]);
+    TEST_ASSERT_TRUE(get_variable_registers()[0xF]);
+}
+
+// 0x8XY7
+void test_subtract_vx_from_vy()
+{
+    struct cpu_status status;
+
+    debug_run_instruction(0x6001);
+    debug_run_instruction(0x6102);
+
+    status = debug_run_instruction(0x8017);
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_UINT8(0xFF, get_variable_registers()[0x0]);
+    TEST_ASSERT_FALSE(get_variable_registers()[0xF]);
+}
+
+void test_subtract_vx_from_vy_with_carry()
+{
+    struct cpu_status status;
+
+    debug_run_instruction(0x6002);
+    debug_run_instruction(0x6101);
+
+    status = debug_run_instruction(0x8017);
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_UINT8(0x01, get_variable_registers()[0x0]);
+    TEST_ASSERT_TRUE(get_variable_registers()[0xF]);
+}
+
+// 0x8XYE
+void test_shift_left()
+{
+    struct cpu_status status;
+
+    debug_run_instruction(0x6003);  // Set V0 to 0b00000011
+
+    status = debug_run_instruction(0x800E);
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_UINT8(0b00000110, get_variable_registers()[0x0]);
+    TEST_ASSERT_FALSE(get_variable_registers()[0xF]);
+}
+
+void test_shift_left_with_carry()
+{
+    struct cpu_status status;
+
+    debug_run_instruction(0x60C0);  // Set V0 to 0b11000000
+
+    status = debug_run_instruction(0x800E);
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_UINT8(0b10000000, get_variable_registers()[0x0]);
+    TEST_ASSERT_TRUE(get_variable_registers()[0xF]);
+}
+
+// 0x8XY6
+void test_shift_right()
+{
+    struct cpu_status status;
+
+    debug_run_instruction(0x60C0);  // Set V0 to 0b11000000
+
+    status = debug_run_instruction(0x8006);
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_UINT8(0b01100000, get_variable_registers()[0x0]);
+    TEST_ASSERT_FALSE(get_variable_registers()[0xF]);
+}
+
+void test_shift_right_with_carry()
+{
+    struct cpu_status status;
+
+    debug_run_instruction(0x6003);  // Set V0 to 0b00000011
+
+    status = debug_run_instruction(0x8006);
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_UINT8(0b00000001, get_variable_registers()[0x0]);
+    TEST_ASSERT_TRUE(get_variable_registers()[0xF]);
+}
+
+// 0x8XY2
+void test_and()
+{
+    struct cpu_status status;
+
+    debug_run_instruction(0x60AC);  // Set V0 to 0b10101100
+    debug_run_instruction(0x6156);  // Set V1 to 0b01010110
+
+    status = debug_run_instruction(0x8012);
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_UINT8(0b00000100, get_variable_registers()[0x0]);
+}
+
+// 0x8XY1
+void test_or()
+{
+    struct cpu_status status;
+
+    debug_run_instruction(0x60AC);  // Set V0 to 0b10101100
+    debug_run_instruction(0x6156);  // Set V1 to 0b01010110
+
+    status = debug_run_instruction(0x8011);
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_UINT8(0b11111110, get_variable_registers()[0x0]);
+}
+
+// 0x8XY3
+void test_xor()
+{
+    struct cpu_status status;
+
+    debug_run_instruction(0x60AC);  // Set V0 to 0b10101100
+    debug_run_instruction(0x6156);  // Set V1 to 0b01010110
+
+    status = debug_run_instruction(0x8013);
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_UINT8(0b11111010, get_variable_registers()[0x0]);
+}
+
 // 0x1NNN
 void test_jump_updates_program_counter()
 {
@@ -257,6 +439,20 @@ int main()
     RUN_TEST(test_machine_language_routine_is_error);
     RUN_TEST(test_set_updates_variable_registers);
     RUN_TEST(test_add_updates_variable_registers);
+    RUN_TEST(test_set_vx_to_vy);
+    RUN_TEST(test_add_vy_to_vx);
+    RUN_TEST(test_add_vy_to_vx_with_carry);
+    RUN_TEST(test_subtract_vy_from_vx);
+    RUN_TEST(test_subtract_vy_from_vx_with_carry);
+    RUN_TEST(test_subtract_vx_from_vy);
+    RUN_TEST(test_subtract_vx_from_vy_with_carry);
+    RUN_TEST(test_shift_left);
+    RUN_TEST(test_shift_left_with_carry);
+    RUN_TEST(test_shift_right);
+    RUN_TEST(test_shift_right_with_carry);
+    RUN_TEST(test_and);
+    RUN_TEST(test_or);
+    RUN_TEST(test_xor);
     RUN_TEST(test_jump_updates_program_counter);
     RUN_TEST(test_skip_if_variable_equal_constant);
     RUN_TEST(test_skip_if_variable_not_equal_constant);

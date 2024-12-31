@@ -58,8 +58,11 @@ static void run_instruction(uint16_t instruction, struct cpu_status *status)
     switch (instruction & N1) {
         case 0x0000:  // System
             switch (instruction & MA) {
-                case 0x00E0:
+                case 0x00E0:  // Clear display
                     clear_display();
+                    break;
+                case 0x00EE:  // Return from subroutine
+                    pop(&s, &PC);
                     break;
                 default:
                     status->code = INVALID_INSTRUCTION;
@@ -69,6 +72,9 @@ static void run_instruction(uint16_t instruction, struct cpu_status *status)
         case 0x1000:  // Jump
             PC = instruction & MA;
             break;
+        case 0x2000:  // Call subroutine
+            push(&s, PC);
+            PC = instruction & MA;
         case 0x6000:  // Set variable register
             V[(instruction & N2) >> 8] = instruction & B2;
             break;

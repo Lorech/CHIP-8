@@ -93,6 +93,73 @@ void test_jump_updates_program_counter()
     TEST_ASSERT_EQUAL_INT16(0xFFF, get_program_counter());
 }
 
+// 0x3XNN
+void test_skip_if_variable_equal_constant()
+{
+    struct cpu_status status;
+
+    // False
+    status = debug_run_instruction(0x3001);
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_INT16(0x200, get_program_counter());
+
+    // True
+    status = debug_run_instruction(0x3000);
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_INT16(0x202, get_program_counter());
+}
+
+// 0x4XNN
+void test_skip_if_variable_not_equal_constant()
+{
+    struct cpu_status status;
+
+    // False
+    status = debug_run_instruction(0x4000);
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_INT16(0x200, get_program_counter());
+
+    // True
+    status = debug_run_instruction(0x4001);
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_INT16(0x202, get_program_counter());
+}
+
+// 0x5XY0
+void test_skip_if_variable_equal_variable()
+{
+    struct cpu_status status;
+
+    // False
+    debug_run_instruction(0x6101);           // Set V1 to 1.
+    status = debug_run_instruction(0x5010);  // Compare V0 (0) to V1 (1).
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_INT16(0x200, get_program_counter());
+
+    // True
+    debug_run_instruction(0x6100);           // Set V1 to 0.
+    status = debug_run_instruction(0x5010);  // Compare V0 (0) to V1 (0).
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_INT16(0x202, get_program_counter());
+}
+
+// 0x9XY0
+void test_skip_if_variable_not_equal_variable()
+{
+    struct cpu_status status;
+
+    // False
+    status = debug_run_instruction(0x9010);  // Compare V0 (0) to V1 (0).
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_INT16(0x200, get_program_counter());
+
+    // True
+    debug_run_instruction(0x6101);           // Set V1 to 1.
+    status = debug_run_instruction(0x9010);  // Compare V0 (0) to V1 (1).
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_INT16(0x202, get_program_counter());
+}
+
 // 0xANNN
 void test_set_index_updates_index_register()
 {
@@ -191,6 +258,10 @@ int main()
     RUN_TEST(test_set_updates_variable_registers);
     RUN_TEST(test_add_updates_variable_registers);
     RUN_TEST(test_jump_updates_program_counter);
+    RUN_TEST(test_skip_if_variable_equal_constant);
+    RUN_TEST(test_skip_if_variable_not_equal_constant);
+    RUN_TEST(test_skip_if_variable_equal_variable);
+    RUN_TEST(test_skip_if_variable_not_equal_variable);
     RUN_TEST(test_set_index_updates_index_register);
     RUN_TEST(test_draw_renders_sprite);
     RUN_TEST(test_clear_display_clears_display);

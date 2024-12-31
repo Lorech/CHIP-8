@@ -75,6 +75,26 @@ static void run_instruction(uint16_t instruction, struct cpu_status *status)
         case 0x2000:  // Call subroutine
             push(&s, PC);
             PC = instruction & MA;
+        case 0x3000:  // Skip if variable equal to constant
+            if (V[(instruction & N2) >> 8] == (instruction & B2)) {
+                PC += 2;
+            }
+            break;
+        case 0x4000:  // Skip if variable not equal to constant
+            if (V[(instruction & N2) >> 8] != (instruction & B2)) {
+                PC += 2;
+            }
+            break;
+        case 0x5000:  // Skip if variable equal to variable
+            if (V[(instruction & N2) >> 8] == V[(instruction & N3) >> 4]) {
+                PC += 2;
+            }
+            break;
+        case 0x9000:  // Skip if variable not equal to variable
+            if (V[(instruction & N2) >> 8] != V[(instruction & N3) >> 4]) {
+                PC += 2;
+            }
+            break;
         case 0x6000:  // Set variable register
             V[(instruction & N2) >> 8] = instruction & B2;
             break;

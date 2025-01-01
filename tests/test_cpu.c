@@ -394,6 +394,22 @@ void test_add_index_updates_index_register_with_carry()
     TEST_ASSERT_TRUE(get_variable_registers()[0xF]);
 }
 
+// 0xFX29
+void test_font_character()
+{
+    struct cpu_status status;
+
+    debug_run_instruction(0x6001);
+    status = debug_run_instruction(0xF029);
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_INT16(FONT_START + 5, get_index_register());
+
+    debug_run_instruction(0x6004);
+    status = debug_run_instruction(0xF029);
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_INT16(FONT_START + 20, get_index_register());
+}
+
 // 0xDXYN
 void test_draw_renders_sprite()
 {
@@ -504,6 +520,7 @@ int main()
     RUN_TEST(test_set_index_updates_index_register);
     RUN_TEST(test_add_index_updates_index_register);
     RUN_TEST(test_add_index_updates_index_register_with_carry);
+    RUN_TEST(test_font_character);
     RUN_TEST(test_draw_renders_sprite);
     RUN_TEST(test_clear_display_clears_display);
     RUN_TEST(test_read_instruction_reads_and_moves_pc);

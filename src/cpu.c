@@ -174,6 +174,11 @@ static void run_instruction(uint16_t instruction, struct cpu_status *status)
                         V[0xF] = 1;
                     }
                     break;
+                case 0x0009:  // Set index register to character
+                {
+                    uint8_t character = V[(instruction & N2) >> 8] & 0x0F;
+                    I = FONT_START + character * 5;
+                } break;
                 default:
                     status->code = INVALID_INSTRUCTION;
                     status->instruction = instruction;

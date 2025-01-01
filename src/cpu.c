@@ -163,6 +163,22 @@ static void run_instruction(uint16_t instruction, struct cpu_status *status)
         case 0xC000:  // Random
             V[(instruction & N2) >> 8] = (uint8_t)rand() & (instruction & B2);
             break;
+        case 0xF000:  // Misc.
+            switch (instruction & N4) {
+                case 0x000E:  // Add to index register
+                    I += V[(instruction & N2) >> 8];
+                    // Manually handle overflow, as the variable is a uint16,
+                    // but the memory space of the system is 12 bits long.
+                    if (I > 0xFFF) {
+                        I = I % 0xFFF - 1;
+                        V[0xF] = 1;
+                    }
+                    break;
+                default:
+                    status->code = INVALID_INSTRUCTION;
+                    status->instruction = instruction;
+            }
+            break;
         default:
             status->code = UNKNOWN_INSTRUCTION;
             status->instruction = instruction;

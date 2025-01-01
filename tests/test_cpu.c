@@ -367,6 +367,33 @@ void test_set_index_updates_index_register()
     TEST_ASSERT_EQUAL_INT16(0x300, get_index_register());
 }
 
+// 0xFX1E
+void test_add_index_updates_index_register()
+{
+    struct cpu_status status;
+
+    debug_run_instruction(0x6002);
+    debug_run_instruction(0xA300);
+
+    status = debug_run_instruction(0xF01E);
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_INT16(0x302, get_index_register());
+    TEST_ASSERT_FALSE(get_variable_registers()[0xF]);
+}
+
+void test_add_index_updates_index_register_with_carry()
+{
+    struct cpu_status status;
+
+    debug_run_instruction(0x6002);
+    debug_run_instruction(0xAFFF);
+
+    status = debug_run_instruction(0xF01E);
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_INT16(0x001, get_index_register());
+    TEST_ASSERT_TRUE(get_variable_registers()[0xF]);
+}
+
 // 0xDXYN
 void test_draw_renders_sprite()
 {
@@ -475,6 +502,8 @@ int main()
     RUN_TEST(test_skip_if_variable_equal_variable);
     RUN_TEST(test_skip_if_variable_not_equal_variable);
     RUN_TEST(test_set_index_updates_index_register);
+    RUN_TEST(test_add_index_updates_index_register);
+    RUN_TEST(test_add_index_updates_index_register_with_carry);
     RUN_TEST(test_draw_renders_sprite);
     RUN_TEST(test_clear_display_clears_display);
     RUN_TEST(test_read_instruction_reads_and_moves_pc);

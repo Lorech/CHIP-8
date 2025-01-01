@@ -275,6 +275,21 @@ void test_jump_updates_program_counter()
     TEST_ASSERT_EQUAL_INT16(0xFFF, get_program_counter());
 }
 
+// 0xBNNN
+void test_jump_with_offset_updates_program_counter()
+{
+    struct cpu_status status;
+
+    status = debug_run_instruction(0xB100);
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_INT16(0x100, get_program_counter());
+
+    debug_run_instruction(0x600F);
+    status = debug_run_instruction(0xB100);
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_INT16(0x10F, get_program_counter());
+}
+
 // 0x3XNN
 void test_skip_if_variable_equal_constant()
 {
@@ -454,6 +469,7 @@ int main()
     RUN_TEST(test_or);
     RUN_TEST(test_xor);
     RUN_TEST(test_jump_updates_program_counter);
+    RUN_TEST(test_jump_with_offset_updates_program_counter);
     RUN_TEST(test_skip_if_variable_equal_constant);
     RUN_TEST(test_skip_if_variable_not_equal_constant);
     RUN_TEST(test_skip_if_variable_equal_variable);

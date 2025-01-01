@@ -72,6 +72,10 @@ static void run_instruction(uint16_t instruction, struct cpu_status *status)
         case 0x1000:  // Jump
             PC = instruction & MA;
             break;
+        case 0xB000:  // Jump with offset
+            PC = (instruction & MA) + V[0x0];
+            // TODO: Add configurable option to use offset of specific register.
+            break;
         case 0x2000:  // Call subroutine
             push(&s, PC);
             PC = instruction & MA;

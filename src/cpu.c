@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include "display.h"
+#include "macros.h"
 #include "memory.h"
 #include "stack.h"
 
@@ -158,6 +159,9 @@ static void run_instruction(uint16_t instruction, struct cpu_status *status)
                 V[(instruction & N3) >> 4],
                 instruction & N4,
                 get_memory_pointer(I));
+            break;
+        case 0xC000:  // Random
+            V[(instruction & N2) >> 8] = (uint8_t)rand() & (instruction & B2);
             break;
         default:
             status->code = UNKNOWN_INSTRUCTION;

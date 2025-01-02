@@ -504,6 +504,50 @@ void test_decimal_conversion()
     TEST_ASSERT_EQUAL_UINT8(6, memory[2]);
 }
 
+// 0xFX55
+void test_store_memory()
+{
+    struct cpu_status status;
+    uint8_t *memory = get_memory_pointer(get_index_register());
+
+    // Add data to variable registers.
+    debug_run_instruction(0x6001);
+    debug_run_instruction(0x6102);
+    debug_run_instruction(0x6203);
+    debug_run_instruction(0x6304);
+
+    // Intentionally exclude last register to test upper bound of storage.
+    status = debug_run_instruction(0xF255);
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_UINT8(1, memory[0]);
+    TEST_ASSERT_EQUAL_UINT8(2, memory[1]);
+    TEST_ASSERT_EQUAL_UINT8(3, memory[2]);
+    // Default value, as V3 should be excluded.
+    TEST_ASSERT_EQUAL_UINT8(0, memory[3]);
+}
+
+// 0xFX65
+void test_load_memory()
+{
+    struct cpu_status status;
+    uint8_t *memory = get_memory_pointer(get_index_register());
+    uint8_t *variables = get_variable_registers();
+
+    // Add data to memory.
+    for (uint8_t i = 0; i < 4; i++) {
+        memory[i] = i + 1;
+    }
+
+    // Intentionally exclude last register to test upper bound of loading.
+    status = debug_run_instruction(0xF265);
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_UINT8(1, variables[0]);
+    TEST_ASSERT_EQUAL_UINT8(2, variables[1]);
+    TEST_ASSERT_EQUAL_UINT8(3, variables[2]);
+    // Default value, as V3 should be excluded.
+    TEST_ASSERT_EQUAL_UINT8(0, variables[3]);
+}
+
 // MARK: CPU cycling
 
 void test_read_instruction_reads_and_moves_pc()
@@ -552,6 +596,8 @@ int main()
     RUN_TEST(test_draw_renders_sprite);
     RUN_TEST(test_clear_display_clears_display);
     RUN_TEST(test_decimal_conversion);
+    RUN_TEST(test_store_memory);
+    RUN_TEST(test_load_memory);
     RUN_TEST(test_read_instruction_reads_and_moves_pc);
     RUN_TEST(test_run_cycle_reads_and_executes_instruction);
     return UNITY_END();

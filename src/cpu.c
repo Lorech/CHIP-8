@@ -196,6 +196,24 @@ static void run_instruction(uint16_t instruction, struct cpu_status *status)
                         memory[j++] = digits[--i];
                     } while (i != 0);
                 } break;
+                case 0x0055:  // Store memory
+                {
+                    uint8_t *memory = get_memory_pointer(I);
+                    for (uint8_t i = 0; i <= (instruction & N2) >> 8; i++) {
+                        memory[i] = V[i];
+                        // TODO: Add configurable option to increment I.
+                    }
+                    break;
+                }
+                case 0x0065:  // Load memory
+                {
+                    uint8_t *memory = get_memory_pointer(I);
+                    for (uint8_t i = 0; i <= (instruction & N2) >> 8; i++) {
+                        V[i] = memory[i];
+                        // TODO: Add configurable option to increment I.
+                    }
+                    break;
+                }
                 default:
                     status->code = INVALID_INSTRUCTION;
                     status->instruction = instruction;

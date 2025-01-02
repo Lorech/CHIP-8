@@ -164,8 +164,8 @@ static void run_instruction(uint16_t instruction, struct cpu_status *status)
             V[(instruction & N2) >> 8] = (uint8_t)rand() & (instruction & B2);
             break;
         case 0xF000:  // Misc.
-            switch (instruction & N4) {
-                case 0x000E:  // Add to index register
+            switch (instruction & B2) {
+                case 0x001E:  // Add to index register
                     I += V[(instruction & N2) >> 8];
                     // Manually handle overflow, as the variable is a uint16,
                     // but the memory space of the system is 12 bits long.
@@ -174,12 +174,12 @@ static void run_instruction(uint16_t instruction, struct cpu_status *status)
                         V[0xF] = 1;
                     }
                     break;
-                case 0x0009:  // Set index register to character
+                case 0x0029:  // Set index register to character
                 {
                     uint8_t character = V[(instruction & N2) >> 8] & 0x0F;
                     I = FONT_START + character * 5;
                 } break;
-                case 0x0003:  // Convert to decimal
+                case 0x0033:  // Convert to decimal
                 {
                     uint8_t *memory = get_memory_pointer(I);
                     uint8_t num = V[(instruction & N2) >> 8];

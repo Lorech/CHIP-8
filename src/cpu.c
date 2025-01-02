@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include "display.h"
+#include "macros.h"
 #include "memory.h"
 #include "stack.h"
 
@@ -58,10 +59,13 @@ static void run_instruction(uint16_t instruction, struct cpu_status *status)
     switch (instruction & N1) {
         case 0x0000:  // System
             switch (instruction & MA) {
-                case 0x00E0:
+                case 0x00E0:  // Clear display
                     clear_display();
                     break;
-                default:
+                case 0x00EE:  // Return from subroutine
+                    pop(&s, &PC);
+                    break;
+                default:  // Call machine code routine
                     status->code = INVALID_INSTRUCTION;
                     status->instruction = instruction;
             }
@@ -69,12 +73,83 @@ static void run_instruction(uint16_t instruction, struct cpu_status *status)
         case 0x1000:  // Jump
             PC = instruction & MA;
             break;
+        case 0xB000:  // Jump with offset
+            PC = (instruction & MA) + V[0x0];
+            // TODO: Add configurable option to use offset of specific register.
+            break;
+        case 0x2000:  // Call subroutine
+            push(&s, PC);
+            PC = instruction & MA;
+        case 0x3000:  // Skip if variable equal to constant
+            if (V[(instruction & N2) >> 8] == (instruction & B2)) {
+                PC += 2;
+            }
+            break;
+        case 0x4000:  // Skip if variable not equal to constant
+            if (V[(instruction & N2) >> 8] != (instruction & B2)) {
+                PC += 2;
+            }
+            break;
+        case 0x5000:  // Skip if variable equal to variable
+            if (V[(instruction & N2) >> 8] == V[(instruction & N3) >> 4]) {
+                PC += 2;
+            }
+            break;
+        case 0x9000:  // Skip if variable not equal to variable
+            if (V[(instruction & N2) >> 8] != V[(instruction & N3) >> 4]) {
+                PC += 2;
+            }
+            break;
         case 0x6000:  // Set variable register
             V[(instruction & N2) >> 8] = instruction & B2;
             break;
         case 0x7000:  // Add to variable register
             V[(instruction & N2) >> 8] += instruction & B2;
             break;
+        case 0x8000:  // Logic and arithmetic
+        {
+            uint8_t *VX = &V[(instruction & N2) >> 8];
+            uint8_t *VY = &V[(instruction & N3) >> 4];
+            switch (instruction & N4) {
+                case 0x000:  // Set
+                    V[(instruction & N2) >> 8] = V[(instruction & N3) >> 4];
+                    break;
+                case 0x004:  // Add
+                    *VX = *VX + *VY;
+                    V[0xF] = *VX <= *VY;
+                    break;
+                case 0x005:  // Subtract Y from X
+                    V[0xF] = *VY > *VX;
+                    *VX = *VY - *VX;
+                    break;
+                case 0x007:  // Subtract X from Y
+                    V[0xF] = *VX > *VY;
+                    *VX = *VX - *VY;
+                    break;
+                case 0x00E:  // Shift left
+                    V[0xF] = (*VX & 0x80) >> 7;
+                    *VX = *VX << 1;
+                    // TODO: Add configurable option to move VY into VX.
+                    break;
+                case 0x006:  // Shift right
+                    V[0xF] = *VX & 0x01;
+                    *VX = *VX >> 1;
+                    // TODO: Add configurable option to move VY into VX.
+                    break;
+                case 0x002:  // AND
+                    *VX = *VX & *VY;
+                    break;
+                case 0x001:  // OR
+                    *VX = *VX | *VY;
+                    break;
+                case 0x003:  // XOR
+                    *VX = *VX ^ *VY;
+                    break;
+                default:
+                    status->code = INVALID_INSTRUCTION;
+                    status->instruction = instruction;
+            }
+        }
         case 0xA000:  // Set index register
             I = instruction & MA;
             break;
@@ -84,6 +159,65 @@ static void run_instruction(uint16_t instruction, struct cpu_status *status)
                 V[(instruction & N3) >> 4],
                 instruction & N4,
                 get_memory_pointer(I));
+            break;
+        case 0xC000:  // Random
+            V[(instruction & N2) >> 8] = (uint8_t)rand() & (instruction & B2);
+            break;
+        case 0xF000:  // Misc.
+            switch (instruction & B2) {
+                case 0x001E:  // Add to index register
+                    I += V[(instruction & N2) >> 8];
+                    // Manually handle overflow, as the variable is a uint16,
+                    // but the memory space of the system is 12 bits long.
+                    if (I > 0xFFF) {
+                        I = I % 0xFFF - 1;
+                        V[0xF] = 1;
+                    }
+                    break;
+                case 0x0029:  // Set index register to character
+                {
+                    uint8_t character = V[(instruction & N2) >> 8] & 0x0F;
+                    I = FONT_START + character * 5;
+                } break;
+                case 0x0033:  // Convert to decimal
+                {
+                    uint8_t *memory = get_memory_pointer(I);
+                    uint8_t num = V[(instruction & N2) >> 8];
+                    // Extract the digits least significant to most.
+                    uint8_t digits[3];
+                    uint8_t i = 0;
+                    do {
+                        digits[i++] = num % 10;
+                        num /= 10;
+                    } while (num != 0);
+                    // Insert the digits most significant to least.
+                    uint8_t j = 0;
+                    do {
+                        memory[j++] = digits[--i];
+                    } while (i != 0);
+                } break;
+                case 0x0055:  // Store memory
+                {
+                    uint8_t *memory = get_memory_pointer(I);
+                    for (uint8_t i = 0; i <= (instruction & N2) >> 8; i++) {
+                        memory[i] = V[i];
+                        // TODO: Add configurable option to increment I.
+                    }
+                    break;
+                }
+                case 0x0065:  // Load memory
+                {
+                    uint8_t *memory = get_memory_pointer(I);
+                    for (uint8_t i = 0; i <= (instruction & N2) >> 8; i++) {
+                        V[i] = memory[i];
+                        // TODO: Add configurable option to increment I.
+                    }
+                    break;
+                }
+                default:
+                    status->code = INVALID_INSTRUCTION;
+                    status->instruction = instruction;
+            }
             break;
         default:
             status->code = UNKNOWN_INSTRUCTION;

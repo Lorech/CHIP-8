@@ -476,6 +476,34 @@ void test_clear_display_clears_display()
     }
 }
 
+// 0xFX33
+void test_decimal_conversion()
+{
+    struct cpu_status status;
+    uint8_t *memory = get_memory_pointer(get_index_register());
+
+    debug_run_instruction(0x6001);  // Set V0 to 1.
+
+    status = debug_run_instruction(0xF033);
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_UINT8(1, memory[0]);
+
+    debug_run_instruction(0x600F);  // Set V0 to 15.
+
+    status = debug_run_instruction(0xF033);
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_UINT8(1, memory[0]);
+    TEST_ASSERT_EQUAL_UINT8(5, memory[1]);
+
+    debug_run_instruction(0x609C);  // Set V0 to 156.
+
+    status = debug_run_instruction(0xF033);
+    TEST_ASSERT_EQUAL_UINT8(SUCCESS, status.code);
+    TEST_ASSERT_EQUAL_UINT8(1, memory[0]);
+    TEST_ASSERT_EQUAL_UINT8(5, memory[1]);
+    TEST_ASSERT_EQUAL_UINT8(6, memory[2]);
+}
+
 // MARK: CPU cycling
 
 void test_read_instruction_reads_and_moves_pc()
@@ -523,6 +551,7 @@ int main()
     RUN_TEST(test_font_character);
     RUN_TEST(test_draw_renders_sprite);
     RUN_TEST(test_clear_display_clears_display);
+    RUN_TEST(test_decimal_conversion);
     RUN_TEST(test_read_instruction_reads_and_moves_pc);
     RUN_TEST(test_run_cycle_reads_and_executes_instruction);
     return UNITY_END();

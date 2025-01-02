@@ -179,6 +179,23 @@ static void run_instruction(uint16_t instruction, struct cpu_status *status)
                     uint8_t character = V[(instruction & N2) >> 8] & 0x0F;
                     I = FONT_START + character * 5;
                 } break;
+                case 0x0003:  // Convert to decimal
+                {
+                    uint8_t *memory = get_memory_pointer(I);
+                    uint8_t num = V[(instruction & N2) >> 8];
+                    // Extract the digits least significant to most.
+                    uint8_t digits[3];
+                    uint8_t i = 0;
+                    do {
+                        digits[i++] = num % 10;
+                        num /= 10;
+                    } while (num != 0);
+                    // Insert the digits most significant to least.
+                    uint8_t j = 0;
+                    do {
+                        memory[j++] = digits[--i];
+                    } while (i != 0);
+                } break;
                 default:
                     status->code = INVALID_INSTRUCTION;
                     status->instruction = instruction;
